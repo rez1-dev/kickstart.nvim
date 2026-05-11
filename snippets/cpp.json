@@ -1,0 +1,77 @@
+{
+  "at": {
+    "prefix": "at",
+    "body": [
+      "#include <bits/stdc++.h>",
+      "using namespace std;",
+      "",
+      "#define ll long long int",
+      "#define ld long double",
+      "#define deb(x) cout << #x << \" = \" << x << \", \";",
+      "",
+      "int main() {",
+      "\tios::sync_with_stdio(false);",
+      "\tcin.tie(nullptr);",
+      "",
+      "\t${1:// code}",
+      "}"
+    ],
+    "description": "at"
+  },
+  "cf": {
+    "prefix": "cf",
+    "body": [
+      "#include <bits/stdc++.h>",
+      "using namespace std;",
+      "",
+      "#define ll long long",
+      "#define ld long double",
+      "#define deb(x) cout << #x << \" = \" << x << \", \";",
+      "",
+      "void solve() {",
+      "\t${1:// code}",
+      "}",
+      "",
+      "int main() {",
+      "\tios::sync_with_stdio(false);",
+      "\tcin.tie(nullptr);",
+      "",
+      "\tint tt = 1;",
+      "\tcin >> tt;",
+      "\tfor(int i = 1; i <= tt; i++) {",
+      "\t\t// cout << \"Case #\" << i << \": \";",
+      "\t\tsolve();",
+      "\t}",
+      "}"
+    ],
+    "description": "cf"
+  },
+  "template": {
+    "prefix": "template",
+    "body": [
+      "#include <bits/stdc++.h>",
+      "using namespace std;",
+      "",
+      "#define ll long long",
+      "#define ld long double",
+      "#define deb(x) cout << #x << \" = \" << x << \", \";",
+      "",
+      "void solve() {",
+      "\t// code",
+      "}",
+      "",
+      "int main() {",
+      "\tios::sync_with_stdio(false);",
+      "\tcin.tie(nullptr);",
+      "",
+      "\tint tt = 1;",
+      "\tcin >> tt;",
+      "\tfor(int i = 1; i <= tt; i++) {",
+      "\t\t// cout << \"Case #\" << i << \": \";",
+      "\t\tsolve();",
+      "\t}",
+      "}"
+    ],
+    "description": "template"
+  }
+}
