@@ -99,7 +99,7 @@ do
   vim.g.maplocalleader = ' '
 
   -- Set to true if you have a Nerd Font installed and selected in the terminal
-  vim.g.have_nerd_font = false
+  vim.g.have_nerd_font = true
 
   -- [[ Setting options ]]
   --  See `:help vim.o`
@@ -128,6 +128,7 @@ do
   vim.o.breakindent = true
 
   -- Enable undo/redo changes even after closing and reopening a file
+  -- NOTE: ends up in ~/.local/state/nvim/undo/
   vim.o.undofile = true
 
   -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
@@ -171,6 +172,11 @@ do
   -- instead raise a dialog asking if you wish to save the current file(s)
   -- See `:help 'confirm'`
   vim.o.confirm = true
+
+  -- Command-line completion
+  vim.opt.wildmenu = true
+  vim.opt.wildmode = 'longest:full,full'
+  vim.opt.wildignore:append { '*.out' }
 end
 
 -- ============================================================
@@ -240,6 +246,64 @@ do
   -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
   -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+  -- Better Esc key
+  vim.keymap.set('i', 'jk', '<Esc>', { noremap = true })
+
+  -- Escape and save changes.
+  vim.keymap.set({ 's', 'i', 'n', 'v' }, '<C-s>', '<esc>:w<cr>', { desc = 'Exit insert mode and save changes' })
+
+  -- Delete a word on Ctrl-Backspace
+  vim.keymap.set({ 'i', 'c' }, '<C-BS>', '<C-w>')
+  vim.keymap.set({ 'i', 'c' }, '<C-H>', '<C-w>') -- Terminal fallback
+
+  -- Delete without yanking
+  vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
+
+  -- Paste without yanking
+  vim.keymap.set('x', '<leader>p', [["_dP]])
+
+  -- Make U opposite to u
+  vim.keymap.set('n', 'U', '<C-r>', { desc = 'Redo' })
+
+  -- Duplicate line(s)
+  vim.keymap.set('n', '<A-l>', 'yyp', { noremap = true })
+  vim.keymap.set('i', '<A-l>', '<Esc>yyp', { noremap = true })
+  vim.keymap.set('v', '<A-l>', 'ygP', { noremap = true })
+
+  -- Move lines up/down
+  vim.keymap.set('n', '<A-j>', ':m .+1<CR>==', { desc = 'Move line down' })
+  vim.keymap.set('n', '<A-k>', ':m .-2<CR>==', { desc = 'Move line up' })
+  vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv", { desc = 'Move selection down' })
+  vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv", { desc = 'Move selection up' })
+
+  -- Indent while remaining in visual mode
+  vim.keymap.set('v', '<', '<gv')
+  vim.keymap.set('v', '>', '>gv')
+
+  -- Keeping the cursor centered
+  vim.keymap.set('n', 'n', 'nzzzv', { desc = 'Next search result (centered)' })
+  vim.keymap.set('n', 'N', 'Nzzzv', { desc = 'Previous search result (centered)' })
+  vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Half page down (centered)' })
+  vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Half page up (centered)' })
+
+  -- Better J behavior
+  vim.keymap.set('n', 'J', 'mzJ`z', { desc = 'Join lines and keep cursor position' })
+
+  -- Buffer navigation
+  vim.keymap.set('n', '<leader>bn', ':bnext<CR>', { desc = 'Next buffer' })
+  vim.keymap.set('n', '<leader>bp', ':bprevious<CR>', { desc = 'Previous buffer' })
+
+  -- Tab navigation
+  vim.keymap.set('n', '<leader>tc', '<cmd>tabclose<cr>', { desc = 'Close tab page' })
+  vim.keymap.set('n', '<leader>tn', '<cmd>tab split<cr>', { desc = 'New tab page' })
+  vim.keymap.set('n', '<leader>to', '<cmd>tabonly<cr>', { desc = 'Close other tab pages' })
+
+  -- Resizing
+  vim.keymap.set('n', '<C-Up>', ':resize +2<CR>', { desc = 'Increase window height' })
+  vim.keymap.set('n', '<C-Down>', ':resize -2<CR>', { desc = 'Decrease window height' })
+  vim.keymap.set('n', '<C-Left>', ':vertical resize -2<CR>', { desc = 'Decrease window width' })
+  vim.keymap.set('n', '<C-Right>', ':vertical resize +2<CR>', { desc = 'Increase window width' })
+
   -- [[ Basic Autocommands ]]
   --  See `:help lua-guide-autocommands`
 
@@ -250,6 +314,67 @@ do
     desc = 'Highlight when yanking (copying) text',
     group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
     callback = function() vim.hl.on_yank() end,
+  })
+
+  vim.api.nvim_create_autocmd('FileType', {
+    group = vim.api.nvim_create_augroup('rez1/close_with_q', { clear = true }),
+    desc = 'Close with <q>',
+    pattern = {
+      'git',
+      'help',
+      'man',
+      'qf',
+      'scratch',
+    },
+    callback = function(args)
+      if args.match ~= 'help' or not vim.bo[args.buf].modifiable then vim.keymap.set('n', 'q', '<cmd>quit<cr>', { buffer = args.buf }) end
+    end,
+  })
+
+  local line_numbers_group = vim.api.nvim_create_augroup('rez1/toggle_line_numbers', {})
+  vim.api.nvim_create_autocmd({ 'BufEnter', 'FocusGained', 'InsertLeave', 'CmdlineLeave', 'WinEnter' }, {
+    group = line_numbers_group,
+    desc = 'Toggle relative line numbers on',
+    callback = function()
+      if vim.wo.nu and not vim.startswith(vim.api.nvim_get_mode().mode, 'i') then vim.wo.relativenumber = true end
+    end,
+  })
+  vim.api.nvim_create_autocmd({ 'BufLeave', 'FocusLost', 'InsertEnter', 'CmdlineEnter', 'WinLeave' }, {
+    group = line_numbers_group,
+    desc = 'Toggle relative line numbers off',
+    callback = function(args)
+      if vim.wo.nu then vim.wo.relativenumber = false end
+
+      -- Redraw here to avoid having to first write something for the line numbers to update.
+      if args.event == 'CmdlineEnter' then
+        if not vim.tbl_contains({ '@', '-' }, vim.v.event.cmdtype) then vim.cmd.redraw() end
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('BufReadPost', {
+    group = vim.api.nvim_create_augroup('rez1/last_location', { clear = true }),
+    desc = 'Go to the last location when opening a buffer',
+    callback = function(args)
+      local mark = vim.api.nvim_buf_get_mark(args.buf, '"')
+      local line_count = vim.api.nvim_buf_line_count(args.buf)
+      if mark[1] > 0 and mark[1] <= line_count then vim.cmd 'normal! g`"zz' end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('BufWritePre', {
+    group = vim.api.nvim_create_augroup('rez1/directory', { clear = true }),
+    desc = 'Create directories when saving files',
+    callback = function()
+      local dir = vim.fn.expand '<afile>:p:h'
+      if vim.fn.isdirectory(dir) == 0 then vim.fn.mkdir(dir, 'p') end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('VimResized', {
+    group = vim.api.nvim_create_augroup('rez1/vimresized', { clear = true }),
+    desc = 'Auto-resize splits when window is resized',
+    callback = function() vim.cmd 'tabdo wincmd =' end,
   })
 end
 
@@ -471,7 +596,7 @@ do
   -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
   -- - sd'   - [S]urround [D]elete [']quotes
   -- - sr)'  - [S]urround [R]eplace [)] [']
-  require('mini.surround').setup()
+  -- require('mini.surround').setup()
 
   -- Simple and easy statusline.
   --  You could remove this setup call if you don't like it,
@@ -733,7 +858,7 @@ do
   --  See `:help lsp-config` for information about keys and how to configure
   ---@type table<string, vim.lsp.Config>
   local servers = {
-    -- clangd = {},
+    clangd = {},
     -- gopls = {},
     -- pyright = {},
     -- tsc = {},
@@ -868,8 +993,9 @@ do
   --    See the README about individual language/framework/plugin snippets:
   --    https://github.com/rafamadriz/friendly-snippets
   --
-  -- vim.pack.add { gh 'rafamadriz/friendly-snippets' }
-  -- require('luasnip.loaders.from_vscode').lazy_load()
+  vim.pack.add { gh 'rafamadriz/friendly-snippets' }
+  require('luasnip.loaders.from_vscode').lazy_load()
+  require('luasnip.loaders.from_vscode').lazy_load { paths = { vim.fn.stdpath 'config' .. '/snippets' } }
 
   -- [[ Autocomplete Engine ]]
   vim.pack.add { { src = gh 'saghen/blink.cmp', version = vim.version.range '1.*' } }
@@ -1013,8 +1139,8 @@ do
   -- require 'kickstart.plugins.debug'
   -- require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
-  -- require 'kickstart.plugins.neo-tree'
+  require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.neo-tree'
 
   -- NOTE: You can add your own plugins, configuration, etc. in `lua/custom/plugins/*.lua`.
   --
@@ -1029,6 +1155,9 @@ do
   -- require 'custom.plugins.colorscheme'
   -- require 'custom.plugins.ui'
   -- require 'custom.plugins.git'
+  require 'custom.plugins.code_runner'
+  require 'custom.plugins.essential-term'
+  require 'custom.plugins.tuna'
 end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
