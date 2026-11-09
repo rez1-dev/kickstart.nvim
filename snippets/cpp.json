@@ -1,0 +1,41 @@
+{
+  "at": {
+    "prefix": "at",
+    "body": [
+      "#include <bits/stdc++.h>",
+      "using namespace std;",
+      "",
+      "int main() {",
+      "\tios::sync_with_stdio(false);",
+      "\tcin.tie(nullptr);",
+      "",
+      "\t${0:// code}",
+      "}"
+    ],
+    "description": "at"
+  },
+  "cf": {
+    "prefix": "cf",
+    "body": [
+      "#include <bits/stdc++.h>",
+      "using namespace std;",
+      "",
+      "void solve() {",
+      "\t${0:// code}",
+      "}",
+      "",
+      "int main() {",
+      "\tios::sync_with_stdio(false);",
+      "\tcin.tie(nullptr);",
+      "",
+      "\tint tt;",
+      "\tcin >> tt;",
+      "\tfor(int qq = 1; qq <= tt; qq++) {",
+      "\t\t// cout << \"Case #\" << qq << \": \";",
+      "\t\tsolve();",
+      "\t}",
+      "}"
+    ],
+    "description": "cf"
+  }
+}
